@@ -1,15 +1,15 @@
 /*!
-  \brief URG ƒZƒ“ƒT—p‚Ì•â•ŠÖ”
+  \brief URG ƒZƒ�??��ƒT—p‚Ì�??��â�??��?��?Ö�??
 
   \author Satofumi KAMIMURA
 
   $Id: urg_utils.c,v da778fd816c2 2011/01/05 20:02:06 Satofumi $
 */
 
-#include "urg_c/urg_time.h"
+#include "urg_time.h"
 
 // Portable time function borrowed from ros::Time
-void urg_walltime(unsigned long *sec, unsigned long *nsec) 
+void urg_walltime(unsigned int *sec, unsigned int *nsec) 
   {
 #ifndef WIN32
 #if HAS_CLOCK_GETTIME
@@ -20,8 +20,8 @@ void urg_walltime(unsigned long *sec, unsigned long *nsec)
 #else
     struct timeval timeofday;
     gettimeofday(&timeofday,NULL);
-    sec  = timeofday.tv_sec;
-    nsec = timeofday.tv_usec * 1000;
+    *sec  = timeofday.tv_sec;
+    *nsec = timeofday.tv_usec * 1000;
 #endif
 #else
     // Win32 implementation
@@ -79,11 +79,11 @@ void urg_walltime(unsigned long *sec, unsigned long *nsec)
     sec = sec_sum;
     nsec = nsec_sum;
 #endif
-  }
+}
 
 void urg_get_walltime(unsigned long long *nsecs){
-    unsigned long sec;
-    unsigned long nsec;
+    unsigned int sec;
+    unsigned int nsec;
     urg_walltime(&sec, &nsec);
     *nsecs = (unsigned long long)sec*1000000000ll + (unsigned long long)nsec;
 }

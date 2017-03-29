@@ -1,17 +1,32 @@
 # Makefile for libs/c
-# $Id: Makefile,v 4537e5141a86 2011/02/17 07:10:04 Satofumi $
+# $Id$
 
 # Compile options
 CC = gcc
+CXX = g++
 #CFLAGS = -O2 -Wall -Werror -W $(INCLUDES)
-CFLAGS = -g -O0 -Wall -Werror -W $(INCLUDES)
-INCLUDES = -I../include
+CFLAGS = -g -O0 -Wall -Werror -W -I../include/c $(INCLUDES)
+CXXFLAGS = $(CFLAGS) -I../include/cpp
+INCLUDES =
 LDFLAGS =
 LDLIBS =
 
 # Target
-URG_C_LIB = liburg_c.a
-TARGET = $(URG_C_LIB)
+URG_C_LIB_STATIC = liburg_c.a
+URG_C_LIB_SHARED = $(shell if test `echo $(OS) | grep Windows`; then echo "urg_c.dll"; else echo "liburg_c.so"; fi)
+URG_CPP_LIB_STATIC = liburg_cpp.a
+URG_CPP_LIB_SHARED = $(shell if test `echo $(OS) | grep Windows`; then echo "urg_cpp.dll"; else echo "liburg_cpp.so"; fi)
+
+TARGET = $(URG_C_LIB_STATIC) $(URG_CPP_LIB_STATIC) \
+		 $(URG_C_LIB_SHARED) $(URG_CPP_LIB_SHARED)
+
+OBJ_C = urg_sensor.o urg_utils.o urg_debug.o urg_connection.o \
+        urg_ring_buffer.o urg_serial.o urg_serial_utils.o urg_tcpclient.o urg_time.o
+OBJ_CPP = ticks.o Urg_driver.o
+
+CFLAGS = -g -O2 $(INCLUDES) -I../include/c -fPIC
+CXXFLAGS = $(CFLAGS) -I../include/cpp
+LDLIBS = -lm $(shell if test `echo $(OS) | grep Windows`; then echo "-lwsock32 -lsetupapi"; fi)
 
 all : $(TARGET)
 
@@ -23,45 +38,16 @@ depend :
 
 .PHONY : all clean depend
 ######################################################################
-$(URG_C_LIB) : \
-	$(URG_C_LIB)(urg_sensor.o) \
-	$(URG_C_LIB)(urg_utils.o) \
-	$(URG_C_LIB)(urg_debug.o) \
-	$(URG_C_LIB)(urg_connection.o) \
-	$(URG_C_LIB)(urg_serial.o) \
-	$(URG_C_LIB)(urg_serial_utils.o) \
-	$(URG_C_LIB)(urg_tcpclient.o) \
-	$(URG_C_LIB)(urg_ring_buffer.o) \
+$(URG_C_LIB_STATIC) : $(OBJ_C)
+	$(AR) rv $@ $(OBJ_C)
+
+$(URG_C_LIB_SHARED) : $(OBJ_C)
+	$(CC) $(CFLAGS) -shared -o $@ $(OBJ_C) $(LDLIBS)
+
+$(URG_CPP_LIB_STATIC) : $(OBJ_C) $(OBJ_CPP)
+	$(AR) rv $@ $(OBJ_C) $(OBJ_CPP)
+
+$(URG_CPP_LIB_SHARED) : $(OBJ_C) $(OBJ_CPP)
+	$(CXX) $(CXXFLAGS) -shared -o $@ $(OBJ_C) $(OBJ_CPP) $(LDLIBS)
 
 urg_serial_utils.o : urg_serial_utils_windows.c urg_serial_utils_linux.c
-
-# DO NOT DELETE
-
-urg_connection.o: ../include/urg_connection.h ../include/urg_serial.h
-urg_connection.o: ../include/urg_detect_os.h ../include/urg_ring_buffer.h
-urg_connection.o: ../include/urg_tcpclient.h
-urg_debug.o: ../include/urg_debug.h ../include/urg_sensor.h
-urg_debug.o: ../include/urg_connection.h ../include/urg_serial.h
-urg_debug.o: ../include/urg_detect_os.h ../include/urg_ring_buffer.h
-urg_debug.o: ../include/urg_tcpclient.h
-urg_ring_buffer.o: ../include/urg_ring_buffer.h
-urg_sensor.o: ../include/urg_sensor.h ../include/urg_connection.h
-urg_sensor.o: ../include/urg_serial.h ../include/urg_detect_os.h
-urg_sensor.o: ../include/urg_ring_buffer.h ../include/urg_tcpclient.h
-urg_sensor.o: ../include/urg_errno.h
-urg_serial.o: ../include/urg_serial.h ../include/urg_detect_os.h
-urg_serial.o: ../include/urg_ring_buffer.h urg_serial_linux.c
-urg_serial_linux.o: ../include/urg_ring_buffer.h
-urg_serial_utils.o: ../include/urg_serial_utils.h ../include/urg_detect_os.h
-urg_serial_utils.o: urg_serial_utils_linux.c
-urg_serial_utils_linux.o: ../include/urg_serial_utils.h
-urg_serial_utils_windows.o: ../include/urg_serial_utils.h
-urg_serial_utils_windows.o: ../include/urg_detect_os.h
-urg_serial_windows.o: ../include/urg_serial.h ../include/urg_detect_os.h
-urg_serial_windows.o: ../include/urg_ring_buffer.h
-urg_tcpclient.o: ../include/urg_detect_os.h ../include/urg_tcpclient.h
-urg_tcpclient.o: ../include/urg_ring_buffer.h
-urg_utils.o: ../include/urg_utils.h ../include/urg_sensor.h
-urg_utils.o: ../include/urg_connection.h ../include/urg_serial.h
-urg_utils.o: ../include/urg_detect_os.h ../include/urg_ring_buffer.h
-urg_utils.o: ../include/urg_tcpclient.h ../include/urg_errno.h

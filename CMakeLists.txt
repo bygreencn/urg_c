@@ -3,9 +3,9 @@ project(urg_c)
 
 # Set library locations to better handle if upstream locations change
 set(LIBRARY_DIR current)
-set(LIBRARY_INCLUDE_DIR ${LIBRARY_DIR}/include)
+set(LIBRARY_INCLUDE_DIR ${LIBRARY_DIR}/include/c)
 set(LIBRARY_SRC_DIR ${LIBRARY_DIR}/src)
-set(LIBRARY_SAMPLE_DIR ${LIBRARY_DIR}/samples)
+set(LIBRARY_SAMPLE_DIR ${LIBRARY_DIR}/samples/c)
 
 find_package(catkin REQUIRED)
 
@@ -97,6 +97,6 @@ install(TARGETS liburg_c open_urg_sensor angle_convert_test calculate_xy find_po
 )
 
 ## Mark cpp header files for installation
-install(DIRECTORY ${LIBRARY_INCLUDE_DIR}/${PROJECT_NAME}/
+install(DIRECTORY ${LIBRARY_INCLUDE_DIR}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )

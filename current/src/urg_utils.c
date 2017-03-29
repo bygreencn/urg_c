@@ -1,19 +1,22 @@
 /*!
+  \file
+  \~japanese
   \brief URG ƒZƒ“ƒT—p‚Ì•â•ŠÖ”
-
+  \~english
+  \brief Auxiliary functions for the sensor
+  \~
   \author Satofumi KAMIMURA
 
-  $Id: urg_utils.c,v da778fd816c2 2011/01/05 20:02:06 Satofumi $
+  $Id$
 */
 
-#include "urg_c/urg_utils.h"
-#include "urg_c/urg_errno.h"
+#include "urg_utils.h"
+#include "urg_errno.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 
 #undef max
 #undef min
-
 
 static int max(int a, int b)
 {
@@ -81,7 +84,8 @@ void urg_distance_min_max(const urg_t *urg,
 
     *min_distance = urg->min_distance;
 
-    // urg_set_communication_data_size() ‚ğ”½‰f‚µ‚½‹——£‚ğ•Ô‚·
+    // \~japanese urg_set_measurement_data_size() ‚ğ”½‰f‚µ‚½‹——£‚ğ•Ô‚·
+    // \~english returns the size configured with urg_set_measurement_data_size()
     *max_distance =
         (urg->range_data_byte == URG_COMMUNICATION_2_BYTE) ?
         max(urg->max_distance, 4095) : urg->max_distance;
@@ -206,4 +210,13 @@ int urg_step2index(const urg_t *urg, int step)
     measure_step = step - urg->received_first_index;
     return min(max(0, measure_step + urg->front_data_index),
                urg->last_data_index);
+}
+
+void urg_delay(int delay_msec)
+{
+#if defined(URG_WINDOWS_OS)
+    Sleep(delay_msec);
+#else
+    usleep(1000 * delay_msec);
+#endif
 }

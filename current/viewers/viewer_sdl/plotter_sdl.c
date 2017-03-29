@@ -2,12 +2,17 @@
   \file
   \brief Plotter (SDL)
 
+  \~japanese
+  \todo glDrawElements() ‚ğg‚¤‚æ‚¤‚ÉC³‚·‚é
+  \todo MAX_POINTS ‚Ì 1081 ‚Ì”‚ğƒZƒ“ƒT‚©‚ç‚Ìî•ñ‚Å‰Šú‰»‚·‚é
+  \~english
+  \todo Fix the code to use glDrawElements()
+  \todo Use the sensor information instead of MAX_POINTS
+  \~
+
   \author Satofumi KAMIMURA
 
-  $Id: plotter_sdl.c,v 540bc11f70c8 2011/05/08 23:04:49 satofumi $
-
-  \todo glDrawElements() ã‚’ä½¿ã†ã‚ˆã†ã«ä¿®æ­£ã™ã‚‹
-  \todo MAX_POINTS ã® 1081 ã®æ•°ã‚’ã‚»ãƒ³ã‚µã‹ã‚‰ã®æƒ…å ±ã§åˆæœŸåŒ–ã™ã‚‹
+  $Id$
 */
 
 //#define USE_GL_2 1
@@ -168,7 +173,8 @@ bool plotter_initialize(int data_size)
         return false;
     }
 
-    // ç”»é¢ã®ä½œæˆ
+    // \~japanese ‰æ–Ê‚Ìì¬
+    // \~english Prepares the display screeen
     opengl_initialize();
     screen_ = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 0, SDL_OPENGL);
     if (!screen_) {
@@ -176,15 +182,16 @@ bool plotter_initialize(int data_size)
     }
     opengl_setup();
 
-    // æç”»è¨­å®š
+    // \~japanese •`‰æİ’è
+    // \~english Prepares for drawing
     glPointSize(2.0);
 #if defined(USE_GL_2)
     glGenBuffers(1, &buffer_id);
 #endif
     enter2D();
 
-    // ãƒ‡ãƒ¼ã‚¿ã®ç¢ºä¿
-    // !!!
+    // \~japanese ƒf[ƒ^‚ÌŠm•Û
+    // \~english Reserves data
 
     return true;
 }
@@ -205,7 +212,8 @@ void plotter_clear(void)
 
 void plotter_swap(void)
 {
-    // è¡¨ç¤ºã‚’å…¥ã‚Œæ›ãˆã‚‹ã¨ãã«ã€ã¾ã æç”»ã—ã¦ã„ãªã„å†…å®¹ã‚’æç”»ã™ã‚‹
+    // \~japanese •\¦‚ğ“ü‚êŠ·‚¦‚é‚Æ‚«‚ÉA‚Ü‚¾•`‰æ‚µ‚Ä‚¢‚È‚¢“à—e‚ğ•`‰æ‚·‚é
+    // \~english Before swapping buffers, finish any pending drawing
     draw_points();
 
     SDL_GL_SwapBuffers();
@@ -214,7 +222,8 @@ void plotter_swap(void)
 
 void plotter_set_color(unsigned char r, unsigned g, unsigned b)
 {
-    // è‰²ã‚’å¤‰æ›´ã™ã‚‹ã¨ãã«ã€ã¾ã¨ã‚ã¦æç”»ã‚’è¡Œã†
+    // \~japanese F‚ğ•ÏX‚·‚é‚Æ‚«‚ÉA‚Ü‚Æ‚ß‚Ä•`‰æ‚ğs‚¤
+    // \~english Before changing color, finish any pending drawing
     draw_points();
 
     glColor3f(r / 255.0, g / 255.0, b / 255.0);
@@ -269,7 +278,8 @@ bool plotter_is_quit(void)
         }
     }
 
-    // æç”»ã®æ‹¡å¤§ç‡ã‚’å¤‰æ›´ã™ã‚‹
+    // \~japanese •`‰æ‚ÌŠg‘å—¦‚ğ•ÏX‚·‚é
+    // \~english Changes the zooming rate
     while (magnify < 0) {
         draw_magnify_ *= 0.90;
         ++magnify;

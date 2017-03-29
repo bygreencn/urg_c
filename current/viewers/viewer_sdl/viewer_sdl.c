@@ -4,7 +4,7 @@
 
   \author Satofumi KAMIMURA
 
-  $Id: viewer_sdl.c,v d746d6f9127d 2011/05/08 23:10:44 satofumi $
+  $Id$
 */
 
 #include "urg_sensor.h"
@@ -16,12 +16,12 @@
 
 
 #if defined(URG_WINDOWS_OS)
-static const char *serial_device = "COM4";
+static const char *default_serial_device = "COM3";
 #else
-static const char *serial_device = "/dev/ttyACM0";
+static const char *default_serial_device = "/dev/ttyACM0";
 #endif
-static const char *ethernet_address = "192.168.0.10";
-//static const char *ethernet_address = "localhost";
+static const char *default_ip_address = "192.168.0.10";
+//static const char *default_ip_address = "localhost";
 
 
 typedef struct
@@ -43,6 +43,8 @@ static void help_exit(const char *program_name)
            "\n"
            "options:\n"
            "  -h, --help    display this help and exit\n"
+           "  -s [device name],   serial connection mode\n"
+           "  -e [ip address],    ethernet connection mode\n"
            "  -i,           intensity mode\n"
            "  -m,           multiecho mode\n"
            "\n",
@@ -55,7 +57,7 @@ static void parse_args(scan_mode_t *mode, int argc, char *argv[])
     int i;
 
     mode->connection_type = URG_SERIAL;
-    mode->device = serial_device;
+    mode->device = default_serial_device;
     mode->baudrate_or_port = 115200;
     mode->is_multiecho = false;
     mode->is_intensity = false;
@@ -66,9 +68,20 @@ static void parse_args(scan_mode_t *mode, int argc, char *argv[])
         if (!strcmp(token, "-h") || !strcmp(token, "--help")) {
             help_exit(argv[0]);
 
+        } else if (!strcmp(token, "-s")) {
+            mode->connection_type = URG_SERIAL;
+            mode->device = default_serial_device;
+            if (argc > i + 1 && argv[i + 1][0] != '-') {
+                mode->device = argv[++i];
+            }
+            mode->baudrate_or_port = 115200;
+
         } else if (!strcmp(token, "-e")) {
             mode->connection_type = URG_ETHERNET;
-            mode->device = ethernet_address;
+            mode->device = default_ip_address;
+            if (argc > i + 1 && argv[i + 1][0] != '-') {
+                mode->device = argv[++i];
+            }
             mode->baudrate_or_port = 10940;
 
         } else if (!strcmp(token, "-m")) {
@@ -124,7 +137,7 @@ static void plot_data(urg_t *urg,
 {
     plotter_clear();
 
-    // è·é›¢
+    // \~japanese ‹——£
     plotter_set_color(0x00, 0xff, 0xff);
     plot_data_point(urg, data, NULL, data_n, is_multiecho, 0);
 
@@ -137,7 +150,7 @@ static void plot_data(urg_t *urg,
     }
 
     if (intensity) {
-        // å¼·åº¦
+        // \~japanese  ‹­“x
         plotter_set_color(0xff, 0xff, 0x00);
         plot_data_point(urg, NULL, intensity, data_n, is_multiecho, 0);
 
@@ -165,17 +178,20 @@ int main(int argc, char *argv[])
     int data_size;
 
 
-    // å¼•æ•°ã®è§£æ
+    // \~japanese  ˆø”‚Ì‰ğÍ
+    // \~english Analyzes the arguments
     parse_args(&mode, argc, argv);
 
-    // URG ã«æ¥ç¶š
+    // \~japanese  URG ‚ÉÚ‘±
+    // \~english Connects to the URG
     if (urg_open(&urg, mode.connection_type,
                  mode.device, mode.baudrate_or_port)) {
         printf("urg_open: %s\n", urg_error(&urg));
         return 1;
     }
 
-    // ãƒ‡ãƒ¼ã‚¿å–å¾—ã®æº–å‚™
+    // \~japanese  ƒf[ƒ^æ“¾‚Ì€”õ
+    // \~english Prepares for measuremment data reading
     data_size = urg_max_data_size(&urg);
     if (mode.is_multiecho) {
         data_size *= 3;
@@ -185,12 +201,14 @@ int main(int argc, char *argv[])
         intensity = malloc(data_size * sizeof(intensity[0]));
     }
 
-    // ç”»é¢ã®ä½œæˆ
+    // \~japanese  ‰æ–Ê‚Ìì¬
+    // \~english Perpares the plot screen
     if (!plotter_initialize(data_size * ((mode.is_intensity) ? 2 : 1))) {
         return 1;
     }
 
-    // ãƒ‡ãƒ¼ã‚¿ã®å–å¾—ã¨æç”»
+    // \~japanese  ƒf[ƒ^‚Ìæ“¾‚Æ•`‰æ
+    // \~english Gets and displays measurement data
     urg_start_measurement(&urg, mode.measurement_type, URG_SCAN_INFINITY, 0);
     while (1) {
         int n;
@@ -231,7 +249,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    // ãƒªã‚½ãƒ¼ã‚¹ã®è§£æ”¾
+    // \~japanese  ƒŠƒ\[ƒX‚Ì‰ğ•ú
+    // \~english Release resources
     plotter_terminate();
     free(intensity);
     free(data);
